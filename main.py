@@ -1,17 +1,15 @@
 # Initialize Firebase
-import json
-firebase_config_path = os.getenv("FIREBASE_CREDENTIALS_PATH")
+firebase_config_path = os.getenv("FIREBASE_CREDENTIALS_PATH", "firebase-credentials.json")
+db = None
 try:
     if not firebase_admin._apps:
-        if firebase_config_path:
-            # Try loading from file path first (local development)
-            if os.path.isfile(firebase_config_path):
-                cred = credentials.Certificate(firebase_config_path)
-            else:
-                # Try loading from JSON string (production)
-                cred = credentials.Certificate(json.loads(firebase_config_path))
+        if os.path.isfile(firebase_config_path):
+            cred = credentials.Certificate(firebase_config_path)
+            firebase_admin.initialize_app(cred)
+            db = firestore.client()
+            print("✓ Firebase initialized successfully")
         else:
-            # Use default Application Default Credentials
-            cred = credentials.ApplicationDefault()
-        firebase_admin.initialize_app(cred)
-    db = firestore.client()
+            print("⚠ Firebase credentials file not found - running in demo mode")
+except Exception as e:
+    print(f"⚠ Firebase initialization warning: {e}")
+    print("Running in demo mode without Firestore")
