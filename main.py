@@ -1,15 +1,38 @@
-# Initialize Firebase
-firebase_config_path = os.getenv("FIREBASE_CREDENTIALS_PATH", "firebase-credentials.json")
-db = None
-try:
-    if not firebase_admin._apps:
-        if os.path.isfile(firebase_config_path):
-            cred = credentials.Certificate(firebase_config_path)
-            firebase_admin.initialize_app(cred)
-            db = firestore.client()
-            print("✓ Firebase initialized successfully")
-        else:
-            print("⚠ Firebase credentials file not found - running in demo mode")
-except Exception as e:
-    print(f"⚠ Firebase initialization warning: {e}")
-    print("Running in demo mode without Firestore")
+import os
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI(
+    title="Money Monitor API",
+    description="Expense tracking backend with AI support",
+    version="1.0.0"
+)
+
+# Enable CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.get("/health")
+async def health_check():
+    return {
+        "status": "healthy",
+        "service": "Money Monitor API",
+        "version": "1.0.0"
+    }
+
+@app.get("/")
+async def root():
+    return {
+        "service": "Money Monitor API",
+        "version": "1.0.0",
+        "status": "running"
+    }
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=5000, reload=True)
